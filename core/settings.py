@@ -46,7 +46,7 @@ ALLOWED_HOSTS = os.environ.get(
 
 CSRF_TRUSTED_ORIGINS = os.environ.get(
     "CSRF_TRUSTED_ORIGINS",
-    "https://inventory.lovosis.in,http://inventory.lovosis.in,http://145.79.12.143,localhost,127.0.0.1"
+    "https://inventory.lovosis.in,http://inventory.lovosis.in,http://145.79.12.143,http://127.0.0.1,http://localhost"
 ).split(",")
 
 
