@@ -1,0 +1,132 @@
+{% extends 'base.html' %}
+{% block title %}Category Stock — Inventory{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+  <div>
+    <h1 class="h3 fw-bold mb-1">Category Breakdown</h1>
+    <p class="text-muted mb-0 small">Product inventory and quantities grouped by category.</p>
+  </div>
+  <a class="btn btn-primary d-inline-flex align-items-center gap-2" href="{% url 'item_list' %}">
+    <i data-lucide="package" style="width: 17px; height: 17px;"></i>
+    <span>All Products</span>
+  </a>
+</div>
+
+<div class="row g-2 mb-3">
+  <div class="col-12">
+    <div class="card p-3 h-100">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+          <h2 class="h6 fw-bold mb-0">Stock Quantity Share by Category</h2>
+          <span class="text-muted small">Visual ratio of inventory items</span>
+        </div>
+        <i data-lucide="pie-chart" style="width: 18px; height: 18px; color: var(--primary-color);"></i>
+      </div>
+      <div class="position-relative flex-grow-1 d-flex align-items-center justify-content-center"
+        style="min-height: 220px;">
+        <canvas id="categoryStockChart"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Category Sections -->
+{% for category in categories %}
+<div class="card mb-3">
+  <div
+    class="card-header py-2 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <div class="d-flex align-items-center gap-2">
+      <i data-lucide="folder" style="width: 18px; height: 18px; color: var(--primary-color);"></i>
+      <h2 class="h6 fw-bold mb-0 text-dark">{{ category.name }}</h2>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <span class="badge badge-cobalt-modern">{{ category.product_count }} product{{ category.product_count|pluralize }}</span>
+      <span class="badge badge-success-modern">{{ category.total_quantity }} units</span>
+    </div>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead>
+        <tr>
+          <th>Product Name</th>
+          <th>Quantity</th>
+          <th>Stock Status</th>
+          <th>Created / Updated</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in category.items %}
+        <tr>
+          <td>
+            <a class="fw-bold text-dark text-decoration-none" href="{% url 'item_detail' item.pk %}">
+              {{ item.name }}
+            </a>
+          </td>
+          <td><span class="fw-bold text-dark">{{ item.quantity }}</span></td>
+          <td>
+            {% if item.stock_status == 'in_stock' %}
+            <span class="badge badge-success-modern"><span class="status-dot"></span> In stock</span>
+            {% else %}
+            <span class="badge badge-amber-modern"><span class="status-dot"></span> Out of stock</span>
+            {% endif %}
+          </td>
+          <td class="text-nowrap text-muted small" style="font-size: 0.775rem;">
+            Created: {{ item.created_at|date:'M d, Y' }}<br>
+            Updated: {{ item.updated_at|date:'M d, Y' }}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% empty %}
+<div class="card">
+  <div class="card-body text-center text-muted py-5">
+    <i data-lucide="layers" style="width: 36px; height: 36px; opacity: 0.4;" class="mb-2"></i>
+    <p class="mb-0">No category stock data available.</p>
+  </div>
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block extra_scripts %}
+{{ category_chart|json_script:'category-stock-data' }}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const categoryStockData = JSON.parse(document.getElementById('category-stock-data').textContent);
+    const ctx = document.getElementById('categoryStockChart').getContext('2d');
+
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: categoryStockData.map(x => x.label),
+        datasets: [{
+          data: categoryStockData.map(x => x.value),
+          backgroundColor: [
+            '#1d4fb8',
+            '#ea7a17',
+            '#64748b',
+            '#10b981',
+            '#2f65cf',
+            '#f2a154',
+            '#334155',
+            '#94a3b8'
+          ],
+          borderWidth: 2,
+          borderColor: '#ffffff'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom', labels: { font: { family: 'Inter', size: 11 }, usePointStyle: true } }
+        },
+        cutout: '68%'
+      }
+    });
+  });
+</script>
+{% endblock %}

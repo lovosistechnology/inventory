@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Inventory — Enterprise Stock & Inventory Management{% endblock %}</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap"
+    rel="stylesheet">
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root {
+      --font-heading: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+      /* ---- Slate Gray (Neutrals / Structure) ---- */
+      --slate-900: #0f172a;
+      --slate-800: #1e293b;
+      --slate-700: #334155;
+      --slate-600: #475569;
+      --slate-500: #64748b;
+      --slate-400: #94a3b8;
+      --slate-300: #cbd5e1;
+      --slate-200: #e2e8f0;
+      --slate-100: #f1f5f9;
+      --slate-50: #f8fafc;
+
+      --sidebar-bg: var(--slate-900);
+      --sidebar-hover: var(--slate-800);
+      --sidebar-text: var(--slate-400);
+      --sidebar-text-active: #ffffff;
+      --sidebar-active-bg: rgba(47, 101, 207, 0.16);
+
+      /* ---- Cobalt Blue (Primary / Brand Accent) ---- */
+      --primary-color: #1d4fb8;
+      --primary-cobalt: #2f65cf;
+      --primary-hover: #163f92;
+      --primary-light: #e8eefb;
+      --primary-rgb: 29, 79, 184;
+
+      /* ---- Amber Orange (Secondary Accent & Warning) ---- */
+      --amber-color: #ea7a17;
+      --amber-hover: #c9660e;
+      --amber-light: #fef2e6;
+      --amber-rgb: 234, 122, 23;
+      --warning-color: var(--amber-color);
+      --warning-hover: var(--amber-hover);
+      --warning-light: var(--amber-light);
+
+      /* ---- Status Colors ---- */
+      --success-color: #10b981;
+      --success-light: #ecfdf5;
+      --danger-color: #ef4444;
+      --danger-light: #fef2f2;
+
+      --bg-surface: var(--slate-50);
+      --card-bg: #ffffff;
+      --border-color: var(--slate-200);
+      --text-main: var(--slate-900);
+      --text-muted: var(--slate-500);
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--bg-surface);
+      color: var(--text-main);
+      -webkit-font-smoothing: antialiased;
+      font-size: 0.885rem;
+      line-height: 1.45;
+    }
+
+    h1, h2, h3, h4, h5, h6, .brand-text {
+      font-family: var(--font-heading);
+      letter-spacing: -0.02em;
+    }
+
+    .app-shell {
+      min-height: 100vh;
+      display: flex;
+    }
+
+    /* Sidebar Styling */
+    .sidebar {
+      width: 250px;
+      background-color: var(--sidebar-bg);
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      z-index: 1000;
+      border-right: 1px solid rgba(255, 255, 255, 0.07);
+      transition: all 0.25s ease;
+      flex-shrink: 0;
+    }
+
+    .brand-header {
+      padding: 1.25rem 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+      background: linear-gradient(180deg, rgba(30, 41, 59, 0.4) 0%, rgba(15, 23, 42, 0.8) 100%);
+    }
+
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+      background: linear-gradient(135deg, var(--primary-cobalt) 0%, var(--primary-color) 100%);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(47, 101, 207, 0.4);
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .brand-title {
+      font-weight: 800;
+      font-size: 1.15rem;
+      color: #ffffff;
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+
+    .brand-badge {
+      font-size: 0.65rem;
+      font-weight: 700;
+      background: rgba(47, 101, 207, 0.25);
+      color: #8daeef;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border: 1px solid rgba(47, 101, 207, 0.3);
+    }
+
+    .sidebar-menu {
+      padding: 1rem 0.75rem;
+      flex-grow: 1;
+      overflow-y: auto;
+    }
+
+    .nav-section-title {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--slate-500);
+      padding: 0 0.75rem 0.35rem;
+      margin-top: 0.6rem;
+    }
+
+    .sidebar .nav-link {
+      color: var(--sidebar-text);
+      font-size: 0.875rem;
+      font-weight: 500;
+      border-radius: 8px;
+      margin-bottom: 3px;
+      padding: 0.55rem 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .sidebar .nav-link i {
+      width: 17px;
+      height: 17px;
+      stroke-width: 2.2;
+      transition: transform 0.2s ease;
+    }
+
+    .sidebar .nav-link:hover {
+      color: var(--sidebar-text-active);
+      background-color: var(--sidebar-hover);
+    }
+
+    .sidebar .nav-link:hover i {
+      transform: translateX(2px);
+    }
+
+    .sidebar .nav-link.active {
+      color: #ffffff;
+      background-color: var(--sidebar-active-bg);
+      font-weight: 600;
+      border-left: 3px solid var(--primary-cobalt);
+    }
+
+    .sidebar .nav-link.active i {
+      color: #8daeef;
+    }
+
+    .sidebar .logout-link {
+      color: #f87171;
+    }
+
+    .sidebar .logout-link:hover {
+      background-color: rgba(239, 68, 68, 0.12);
+      color: #ef4444;
+    }
+
+    .sidebar-footer {
+      padding: 1rem 1.1rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.07);
+      background: rgba(15, 23, 42, 0.9);
+    }
+
+    .user-profile-card {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: rgba(255, 255, 255, 0.04);
+      padding: 0.55rem 0.75rem;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .avatar-circle {
+      width: 34px;
+      height: 34px;
+      background: linear-gradient(135deg, var(--slate-700), var(--slate-800));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: #f8fafc;
+      border: 1.5px solid rgba(255, 255, 255, 0.15);
+      flex-shrink: 0;
+    }
+
+    /* Main Content Shell */
+    .page-content {
+      flex-grow: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .top-header {
+      background-color: #ffffff;
+      border-bottom: 1px solid var(--border-color);
+      padding: 0.65rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+      position: sticky;
+      top: 0;
+      z-index: 900;
+    }
+
+    /* Cards - Data Dense */
+    .card {
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.03), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
+      background-color: var(--card-bg);
+      transition: box-shadow 0.2s ease, transform 0.2s ease;
+    }
+
+    .card:hover {
+      box-shadow: 0 8px 24px -4px rgba(15, 23, 42, 0.06);
+    }
+
+    .card-header {
+      border-bottom: 1px solid var(--border-color);
+      background-color: #ffffff;
+      padding: 0.75rem 1rem;
+    }
+
+    /* Stat KPI Cards */
+    .stat-card {
+      position: relative;
+      overflow: hidden;
+      border-left: 0;
+      padding: 1rem;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 4px;
+      background: var(--primary-color);
+      border-radius: 10px 0 0 10px;
+    }
+
+    .stat-card.stat-cobalt::before {
+      background: var(--primary-cobalt);
+    }
+
+    .stat-card.stat-amber::before {
+      background: var(--amber-color);
+    }
+
+    .stat-card.stat-success::before {
+      background: var(--success-color);
+    }
+
+    .stat-card.stat-danger::before {
+      background: var(--danger-color);
+    }
+
+    .stat-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--primary-light);
+      color: var(--primary-color);
+      flex-shrink: 0;
+    }
+
+    .stat-icon.icon-amber {
+      background: var(--amber-light);
+      color: var(--amber-color);
+    }
+
+    .stat-icon.icon-success {
+      background: var(--success-light);
+      color: var(--success-color);
+    }
+
+    .stat-icon.icon-danger {
+      background: var(--danger-light);
+      color: var(--danger-color);
+    }
+
+    /* Modern Badges */
+    .badge-modern {
+      padding: 0.28em 0.6em;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.725rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .badge-cobalt-modern,
+    .badge-indigo-modern {
+      background-color: var(--primary-light);
+      color: #163884;
+      border: 1px solid rgba(29, 79, 184, 0.22);
+      padding: 0.28em 0.6em;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.725rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .badge-amber-modern,
+    .badge-warning-modern {
+      background-color: var(--amber-light);
+      color: #b45309;
+      border: 1px solid rgba(234, 122, 23, 0.25);
+      padding: 0.28em 0.6em;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.725rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .badge-success-modern {
+      background-color: var(--success-light);
+      color: #047857;
+      border: 1px solid rgba(16, 185, 129, 0.22);
+      padding: 0.28em 0.6em;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.725rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .badge-danger-modern {
+      background-color: var(--danger-light);
+      color: #b91c1c;
+      border: 1px solid rgba(239, 68, 68, 0.22);
+      padding: 0.28em 0.6em;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.725rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .badge-slate-modern {
+      background-color: var(--slate-100);
+      color: var(--slate-700);
+      border: 1px solid var(--slate-300);
+      padding: 0.28em 0.6em;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.725rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: currentColor;
+    }
+
+    /* Buttons */
+    .btn-primary {
+      background-color: var(--primary-color);
+      border-color: var(--primary-color);
+      border-radius: 8px;
+      font-weight: 600;
+      padding: 0.48rem 0.95rem;
+      box-shadow: 0 2px 5px rgba(29, 79, 184, 0.25);
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary:hover,
+    .btn-primary:focus {
+      background-color: var(--primary-hover);
+      border-color: var(--primary-hover);
+      box-shadow: 0 4px 10px rgba(29, 79, 184, 0.35);
+    }
+
+    .btn-amber,
+    .btn-warning {
+      background-color: var(--amber-color);
+      border-color: var(--amber-color);
+      color: #ffffff !important;
+      border-radius: 8px;
+      font-weight: 600;
+      padding: 0.48rem 0.95rem;
+      box-shadow: 0 2px 5px rgba(234, 122, 23, 0.25);
+      transition: all 0.2s ease;
+    }
+
+    .btn-amber:hover,
+    .btn-warning:hover {
+      background-color: var(--amber-hover);
+      border-color: var(--amber-hover);
+      box-shadow: 0 4px 10px rgba(234, 122, 23, 0.35);
+      color: #ffffff !important;
+    }
+
+    .btn-success {
+      background-color: var(--success-color);
+      border-color: var(--success-color);
+      border-radius: 8px;
+      font-weight: 600;
+      padding: 0.48rem 0.95rem;
+      box-shadow: 0 2px 5px rgba(16, 185, 129, 0.25);
+    }
+
+    .btn-success:hover {
+      background-color: #059669;
+      border-color: #059669;
+    }
+
+    .btn-outline-primary {
+      color: var(--primary-color);
+      border-color: var(--slate-300);
+      border-radius: 8px;
+      font-weight: 500;
+    }
+
+    .btn-outline-primary:hover {
+      background-color: var(--primary-light);
+      color: var(--primary-color);
+      border-color: var(--primary-color);
+    }
+
+    .btn-outline-amber {
+      color: var(--amber-color);
+      border-color: var(--slate-300);
+      border-radius: 8px;
+      font-weight: 500;
+    }
+
+    .btn-outline-amber:hover {
+      background-color: var(--amber-light);
+      color: var(--amber-color);
+      border-color: var(--amber-color);
+    }
+
+    /* High Density Tables */
+    .table {
+      margin-bottom: 0;
+    }
+
+    .table thead th {
+      background-color: var(--slate-100);
+      color: var(--slate-600);
+      font-weight: 700;
+      font-size: 0.69rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      border-bottom: 1px solid var(--border-color);
+      padding: 0.55rem 0.8rem;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+
+    .table tbody td {
+      padding: 0.55rem 0.8rem;
+      vertical-align: middle;
+      border-bottom: 1px solid var(--border-color);
+      font-size: 0.84rem;
+    }
+
+    .table-hover tbody tr:hover {
+      background-color: #f1f5f9;
+    }
+
+    /* Form Controls & Modals */
+    .modal-content {
+      border: 0;
+      border-radius: 14px;
+      box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.15), 0 10px 10px -5px rgba(15, 23, 42, 0.05);
+      overflow: hidden;
+    }
+
+    .modal-header {
+      background-color: var(--slate-50);
+      border-bottom: 1px solid var(--border-color);
+      padding: 1rem 1.25rem;
+    }
+
+    .modal-footer {
+      background-color: var(--slate-50);
+      border-top: 1px solid var(--border-color);
+      padding: 0.85rem 1.25rem;
+    }
+
+    .form-control,
+    .form-select {
+      border-radius: 8px;
+      border: 1px solid var(--slate-300);
+      padding: 0.5rem 0.75rem;
+      font-size: 0.875rem;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+      border-color: var(--primary-cobalt);
+      box-shadow: 0 0 0 3px rgba(47, 101, 207, 0.18);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 991.98px) {
+      .app-shell {
+        display: block !important;
+      }
+
+      .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        top: auto;
+      }
+
+      .sidebar-menu {
+        padding: 0.75rem;
+      }
+
+      .sidebar .nav {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 6px;
+      }
+
+      .sidebar-footer {
+        display: none;
+      }
+    }
+
+    @media (max-width: 575.98px) {
+      .sidebar .nav {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+
+<body>
+  <div class="app-shell">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div>
+        <div class="brand-header">
+          <div class="brand-icon">
+            <i data-lucide="boxes"></i>
+          </div>
+          <div>
+            <div class="d-flex align-items-center gap-2">
+              <span class="brand-title">Inventory</span>
+              <span class="brand-badge">v2.0</span>
+            </div>
+            <span class="text-muted small" style="font-size: 0.725rem; color: var(--slate-400) !important;">Stock Control System</span>
+          </div>
+        </div>
+
+        <div class="sidebar-menu">
+          <div class="nav-section-title">Core Management</div>
+          <nav class="nav flex-column">
+            <a class="nav-link {% if active_page == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
+              <i data-lucide="layout-dashboard"></i>
+              <span>Dashboard</span>
+            </a>
+            <a class="nav-link {% if active_page == 'inventory' %}active{% endif %}" href="{% url 'item_list' %}">
+              <i data-lucide="package"></i>
+              <span>Inventory List</span>
+            </a>
+            <a class="nav-link {% if active_page == 'stock' %}active{% endif %}" href="{% url 'stock_page' %}">
+              <i data-lucide="arrow-left-right"></i>
+              <span>Stock Movements</span>
+            </a>
+            <a class="nav-link {% if active_page == 'categories' %}active{% endif %}" href="{% url 'category_stock' %}">
+              <i data-lucide="layers"></i>
+              <span>Category Stock</span>
+            </a>
+            <a class="nav-link {% if active_page == 'history' %}active{% endif %}" href="{% url 'history' %}">
+              <i data-lucide="history"></i>
+              <span>Audit History</span>
+            </a>
+          </nav>
+
+          <div class="nav-section-title">System</div>
+          <nav class="nav flex-column">
+            <a class="nav-link" href="/admin/" target="_blank">
+              <i data-lucide="shield-check"></i>
+              <span>Django Admin</span>
+            </a>
+            <a class="nav-link logout-link" href="{% url 'logout' %}">
+              <i data-lucide="log-out"></i>
+              <span>Sign Out</span>
+            </a>
+          </nav>
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="user-profile-card">
+          <div class="avatar-circle">
+            {{ request.user.username|slice:":1"|upper }}
+          </div>
+          <div class="text-truncate" style="line-height: 1.2;">
+            <div class="fw-semibold text-white small text-truncate">{{ request.user.username }}</div>
+            <div style="font-size: 0.725rem; color: var(--slate-400);">Active Session</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Page Wrapper -->
+    <section class="page-content">
+      <header class="top-header">
+        <div class="d-flex align-items-center gap-2">
+          <span class="badge badge-cobalt-modern">
+            <i data-lucide="building-2" style="width: 14px; height: 14px;"></i> Enterprise Workspace
+          </span>
+          <span class="badge badge-amber-modern d-none d-md-inline-flex">
+            <i data-lucide="shield-alert" style="width: 14px; height: 14px;"></i> Live Stock Stream
+          </span>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+          <div class="d-none d-md-flex align-items-center gap-2 text-muted small me-2">
+            <i data-lucide="clock" style="width: 15px; height: 15px;"></i>
+            <span>System Active</span>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            <div class="avatar-circle" style="width: 28px; height: 28px; font-size: 0.75rem;">
+              {{ request.user.username|slice:":1"|upper }}
+            </div>
+            <span class="fw-medium text-dark small">{{ request.user.username }}</span>
+          </div>
+        </div>
+      </header>
+
+      <main class="p-3 p-md-4 flex-grow-1">
+        {% block content %}{% endblock %}
+      </main>
+    </section>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+  </script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+
+</html>

@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% block title %}Audit History & Logs — Inventory{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+  <div>
+    <h1 class="h3 fw-bold mb-1">System Audit & Event Trail</h1>
+    <p class="text-muted mb-0 small">Immutable system activity logs, product additions, modifications, and stock event tracking.</p>
+  </div>
+  <a class="btn btn-primary d-inline-flex align-items-center gap-2" href="{% url 'item_list' %}">
+    <i data-lucide="package" style="width: 17px; height: 17px;"></i>
+    <span>Inventory List</span>
+  </a>
+</div>
+
+<!-- Event Distribution Chart -->
+<div class="card p-3 mb-3">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+      <h2 class="h6 fw-bold mb-0">Audit Events Breakdown</h2>
+      <span class="text-muted small">Distribution of logged actions across system operations</span>
+    </div>
+    <i data-lucide="history" style="width: 18px; height: 18px; color: var(--primary-color);"></i>
+  </div>
+  <div class="position-relative" style="min-height: 180px;">
+    <canvas id="historyChart"></canvas>
+  </div>
+</div>
+
+<!-- Complete Activity Log Card -->
+<div class="card">
+  <div class="card-header py-2 border-bottom d-flex align-items-center justify-content-between">
+    <div class="d-flex align-items-center gap-2">
+      <i data-lucide="shield-alert" style="width: 18px; height: 18px; color: var(--primary-color);"></i>
+      <h2 class="h6 fw-bold mb-0">Complete Audit Trail</h2>
+    </div>
+  </div>
+  <div class="card-body p-0">
+    <div class="list-group list-group-flush border-0">
+      {% for log in logs %}
+      <div class="list-group-item p-3 border-bottom">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+          <div class="d-flex align-items-center gap-2">
+            {% if log.action == 'created' %}
+            <span class="badge badge-success-modern"><i data-lucide="plus-circle" style="width: 13px; height: 13px;"></i> Created</span>
+            {% elif log.action == 'updated' %}
+            <span class="badge badge-cobalt-modern"><i data-lucide="edit" style="width: 13px; height: 13px;"></i> Updated</span>
+            {% elif log.action == 'deleted' %}
+            <span class="badge badge-danger-modern"><i data-lucide="trash-2" style="width: 13px; height: 13px;"></i> Deleted</span>
+            {% else %}
+            <span class="badge badge-amber-modern"><i data-lucide="refresh-cw" style="width: 13px; height: 13px;"></i> Stock Changed</span>
+            {% endif %}
+            <strong class="text-dark fs-6">{{ log.item_name }}</strong>
+          </div>
+          <div class="text-muted small d-flex align-items-center gap-1">
+            <i data-lucide="clock" style="width: 13px; height: 13px;"></i>
+            {{ log.created_at|date:'M d, Y H:i:s' }}
+          </div>
+        </div>
+
+        <div class="small text-muted mb-2">
+          Executed by <strong class="text-dark">{{ log.actor|default:'System Admin' }}</strong>
+        </div>
+
+        {% if log.details %}
+        <div class="p-3 bg-light rounded border mt-2">
+          <div class="row g-2 small">
+            {% for key, value in log.details.items %}
+            <div class="col-sm-6 col-md-4">
+              <span class="text-muted text-capitalize d-block" style="font-size: 0.775rem;">{{ key|cut:'_' }}:</span>
+              <span class="fw-semibold text-dark">{{ value }}</span>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% else %}
+        <div class="small text-muted fst-italic mt-1">No additional metadata parameters recorded.</div>
+        {% endif %}
+      </div>
+      {% empty %}
+      <div class="p-5 text-center text-muted">
+        <i data-lucide="history" style="width: 36px; height: 36px; opacity: 0.4;" class="mb-2"></i>
+        <p class="mb-0">No audit logs recorded yet.</p>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+{{ action_chart|json_script:'history-action-data' }}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const historyActionData = JSON.parse(document.getElementById('history-action-data').textContent);
+    const ctx = document.getElementById('historyChart').getContext('2d');
+
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: historyActionData.map(x => x.label),
+        datasets: [{
+          label: 'Total Audit Events',
+          data: historyActionData.map(x => x.value),
+          backgroundColor: '#1d4fb8',
+          hoverBackgroundColor: '#2f65cf',
+          borderRadius: 6,
+          maxBarThickness: 45
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { family: 'Inter', size: 11 } } },
+          x: { grid: { display: false }, ticks: { font: { family: 'Inter', size: 11 } } }
+        }
+      }
+    });
+  });
+</script>
+{% endblock %}

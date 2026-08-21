@@ -1,0 +1,548 @@
+{% extends 'base.html' %}
+{% block title %}Product Inventory — Inventory{% endblock %}
+
+{% block content %}
+<style>
+  .product-thumb {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+  }
+
+  .product-placeholder {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: var(--primary-light);
+    color: var(--primary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    border: 1px solid rgba(29, 79, 184, 0.2);
+    font-size: 0.9rem;
+  }
+
+  .history-line {
+    border-bottom: 1px solid var(--slate-100);
+    padding: 0.65rem 0;
+  }
+
+  .search-box {
+    position: relative;
+    max-width: 340px;
+  }
+
+  .search-box i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    width: 16px;
+    height: 16px;
+  }
+
+  .search-box input {
+    padding-left: 36px;
+  }
+
+  .action-btn-group .btn {
+    padding: 0.28rem 0.55rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+  }
+</style>
+
+<!-- Header & Add Item -->
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+  <div>
+    <h1 class="h3 fw-bold mb-1">Product Inventory</h1>
+    <p class="text-muted mb-0 small">Catalog management, stock status tracking, and quick operational updates.</p>
+  </div>
+  <button type="button" class="btn btn-success d-inline-flex align-items-center gap-2" data-bs-toggle="modal"
+    data-bs-target="#addItemModal">
+    <i data-lucide="plus" style="width: 17px; height: 17px;"></i>
+    <span>Add New Product</span>
+  </button>
+</div>
+
+<!-- Bulk Delete Hidden Form -->
+<form id="bulk-delete-form" method="post" action="{% url 'bulk_delete_items' %}">
+  {% csrf_token %}
+</form>
+
+<!-- Main Table Card -->
+<div class="card">
+  <div
+    class="card-header py-2 border-bottom d-flex flex-wrap justify-content-between align-items-center gap-3">
+    <div class="d-flex align-items-center gap-3 flex-grow-1">
+      <div class="search-box flex-grow-1">
+        <i data-lucide="search"></i>
+        <input type="text" id="inventory-search" class="form-control form-control-sm"
+          placeholder="Search products, category..." autocomplete="off">
+      </div>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <button form="bulk-delete-form" id="bulk-delete-btn"
+        class="btn btn-sm btn-outline-danger d-inline-flex align-items-center gap-1" type="submit">
+        <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+        <span>Delete Selected</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0" id="inventory-table">
+      <thead>
+        <tr>
+          <th style="width: 38px;">
+            <input form="bulk-delete-form" type="checkbox" id="select-all" class="form-check-input"
+              aria-label="Select all">
+          </th>
+          <th>Product</th>
+          <th>Status</th>
+          <th>Quantity</th>
+          <th>Category</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        <tr class="item-row">
+          <td>
+            <input form="bulk-delete-form" type="checkbox" name="item_ids" value="{{ item.pk }}"
+              class="form-check-input item-checkbox" aria-label="Select {{ item.name }}">
+          </td>
+          <td>
+            <div class="d-flex align-items-center gap-3">
+              {% if item.image %}
+              <img class="product-thumb" src="{{ item.image.url }}" alt="{{ item.name }}">
+              {% else %}
+              <div class="product-placeholder">{{ item.name|slice:":1"|upper }}</div>
+              {% endif %}
+              <div>
+                <a class="fw-bold text-dark text-decoration-none d-block item-name-link" href="javascript:void(0);"
+                  role="button" data-bs-toggle="modal" data-bs-target="#detailsModal{{ item.pk }}">
+                  {{ item.name }}
+                </a>
+              </div>
+            </div>
+          </td>
+          <td>
+            {% if item.stock_status == 'in_stock' %}
+            <span class="badge badge-success-modern">
+              <span class="status-dot"></span> In stock
+            </span>
+            {% else %}
+            <span class="badge badge-amber-modern">
+              <span class="status-dot"></span> Out of stock
+            </span>
+            {% endif %}
+          </td>
+          <td>
+            <span class="fw-bold text-dark fs-6">{{ item.quantity }}</span>
+            <span class="text-muted small">units</span>
+          </td>
+          <td>
+            <span class="badge badge-cobalt-modern">{{ item.category }}</span>
+          </td>
+          <td class="text-end text-nowrap action-btn-group">
+            <button type="button" class="btn btn-sm btn-outline-primary me-1 d-inline-flex align-items-center gap-1"
+              data-bs-toggle="modal" data-bs-target="#detailsModal{{ item.pk }}" title="View Details">
+              <i data-lucide="eye" style="width: 13px; height: 13px;"></i>
+              <span class="d-none d-xl-inline">View</span>
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-amber me-1 d-inline-flex align-items-center gap-1"
+              data-bs-toggle="modal" data-bs-target="#stockModal{{ item.pk }}" title="Adjust Stock">
+              <i data-lucide="arrow-left-right" style="width: 13px; height: 13px;"></i>
+              <span>Stock +/-</span>
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-primary me-1 d-inline-flex align-items-center gap-1"
+              data-bs-toggle="modal" data-bs-target="#editModal{{ item.pk }}" title="Edit Item">
+              <i data-lucide="edit-2" style="width: 13px; height: 13px;"></i>
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-danger d-inline-flex align-items-center gap-1"
+              data-bs-toggle="modal" data-bs-target="#deleteModal{{ item.pk }}" title="Delete Item">
+              <i data-lucide="trash-2" style="width: 13px; height: 13px;"></i>
+            </button>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center text-muted py-5">
+            <i data-lucide="package-x" style="width: 36px; height: 36px; opacity: 0.4;"
+              class="d-block mx-auto mb-2"></i>
+            <p class="mb-0">No products found in inventory catalog.</p>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal: Add Item -->
+<div class="modal fade" id="addItemModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="d-flex align-items-center gap-2">
+          <i data-lucide="plus-circle" style="width: 20px; height: 20px; color: var(--primary-color);"></i>
+          <h2 class="modal-title h5 fw-bold mb-0">Add New Product</h2>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post" action="{% url 'add_item' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="modal-body p-4">
+          <div class="alert alert-light border d-flex align-items-center gap-2 small text-muted mb-4">
+            <i data-lucide="info" style="width: 18px; height: 18px; color: var(--primary-color);"></i>
+            <div>Creator: <strong>{{ request.user.username }}</strong>. Complete product details below.</div>
+          </div>
+          {% if add_form.non_field_errors %}
+          <div class="alert alert-danger small mb-3">
+            {% for error in add_form.non_field_errors %}{{ error }}<br>{% endfor %}
+          </div>
+          {% endif %}
+          {% for field in add_form %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold text-dark small" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% for error in field.errors %}
+            <div class="text-danger small mt-1">{{ error }}</div>
+            {% endfor %}
+          </div>
+          {% endfor %}
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-light border" data-bs-dismiss="modal" type="button">Cancel</button>
+          <button class="btn btn-success d-inline-flex align-items-center gap-1" type="submit">
+            <i data-lucide="check" style="width: 16px; height: 16px;"></i>
+            <span>Create Product</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modals for each item -->
+{% for item in items %}
+
+<!-- Modal: View Details -->
+<div class="modal fade" id="detailsModal{{ item.pk }}" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="d-flex align-items-center gap-2">
+          <i data-lucide="package" style="width: 20px; height: 20px; color: var(--primary-color);"></i>
+          <h2 class="modal-title h5 fw-bold mb-0">{{ item.name }}</h2>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4">
+        {% if item.image %}
+        <div class="text-center mb-3">
+          <img src="{{ item.image.url }}" class="img-fluid rounded border" style="max-height:220px" alt="{{ item.name }}">
+        </div>
+        {% endif %}
+        <div class="row g-3 mb-4">
+          <div class="col-sm-6">
+            <div class="p-3 bg-light rounded border">
+              <span class="text-muted small d-block">Quantity</span>
+              <span class="fs-5 fw-bold text-dark">{{ item.quantity }} units</span>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="p-3 bg-light rounded border">
+              <span class="text-muted small d-block">Stock Status</span>
+              <span class="fs-5 fw-bold text-dark">{{ item.get_stock_status_display }}</span>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="p-3 bg-light rounded border">
+              <span class="text-muted small d-block">Category</span>
+              <span class="fw-semibold text-dark">{{ item.category }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="p-3 bg-light rounded border mb-4">
+          <span class="text-muted small d-block mb-1">Audit Metadata</span>
+          <div class="small text-muted">
+            Created by <strong>{{ item.created_by_name|default:item.created_by|default:'System' }}</strong> on {{ item.created_at|date:'Y-m-d H:i' }}<br>
+            Last modified by <strong>{{ item.updated_by_name|default:item.updated_by|default:'System' }}</strong> on {{ item.updated_at|date:'Y-m-d H:i' }}
+          </div>
+        </div>
+
+        <h3 class="h6 fw-bold mb-2">Stock Movements</h3>
+        {% for movement in item.stock_movements.all %}
+        <div class="history-line small d-flex justify-content-between align-items-center">
+          <div>
+            <strong>{% if movement.direction == 'in' %}+{% else %}-{% endif %}{{ movement.quantity }} units</strong>
+            by {{ movement.performed_by_name|default:movement.performed_by|default:'Staff' }}
+            {% if movement.client_name %}<span class="text-muted">(Client: {{ movement.client_name }})</span>{% endif %}
+          </div>
+          <span class="text-muted" style="font-size: 0.75rem;">{{ movement.created_at|date:'M d, H:i' }}</span>
+        </div>
+        {% empty %}
+        <p class="text-muted small">No stock movements recorded.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Edit Item -->
+<div class="modal fade" id="editModal{{ item.pk }}" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="d-flex align-items-center gap-2">
+          <i data-lucide="edit-3" style="width: 20px; height: 20px; color: var(--primary-color);"></i>
+          <h2 class="modal-title h5 fw-bold mb-0">Edit Product: {{ item.name }}</h2>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post" action="{% url 'edit_item' item.pk %}" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="modal-body p-4">
+          {% if item.edit_form.non_field_errors %}
+          <div class="alert alert-danger small mb-3">
+            {% for error in item.edit_form.non_field_errors %}{{ error }}<br>{% endfor %}
+          </div>
+          {% endif %}
+          {% for field in item.edit_form %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold text-dark small" for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {{ field }}
+            {% for error in field.errors %}
+            <div class="text-danger small mt-1">{{ error }}</div>
+            {% endfor %}
+          </div>
+          {% endfor %}
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-light border" data-bs-dismiss="modal" type="button">Cancel</button>
+          <button class="btn btn-primary d-inline-flex align-items-center gap-1" type="submit">
+            <i data-lucide="save" style="width: 16px; height: 16px;"></i>
+            <span>Save Changes</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Stock Adjustment -->
+<div class="modal fade" id="stockModal{{ item.pk }}" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="d-flex align-items-center gap-2">
+          <i data-lucide="arrow-left-right" style="width: 20px; height: 20px; color: var(--amber-color);"></i>
+          <h2 class="modal-title h5 fw-bold mb-0">Adjust Stock: {{ item.name }}</h2>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post" action="{% url 'adjust_stock' item.pk %}">
+        {% csrf_token %}
+        <input type="hidden" name="direction" id="direction{{ item.pk }}" value="in">
+        <div class="modal-body p-4">
+          <div class="alert alert-light border mb-3 small">
+            Current stock level: <strong class="text-dark">{{ item.quantity }} units</strong>
+          </div>
+          {% if item.stock_form %}
+          {% if item.stock_form.non_field_errors %}
+          <div class="alert alert-danger small mb-3">
+            {% for error in item.stock_form.non_field_errors %}{{ error }}<br>{% endfor %}
+          </div>
+          {% endif %}
+          {% endif %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold text-dark small" for="quantity{{ item.pk }}">Quantity Adjustment</label>
+            <input class="form-control" type="number" name="quantity" id="quantity{{ item.pk }}" min="1" value="1" required>
+            {% if item.stock_form and item.stock_form.quantity.errors %}
+            {% for error in item.stock_form.quantity.errors %}
+            <div class="text-danger small mt-1">{{ error }}</div>
+            {% endfor %}
+            {% endif %}
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold text-dark small" for="client_name{{ item.pk }}">Client Name / Reference</label>
+            <input class="form-control" type="text" name="client_name" id="client_name{{ item.pk }}" placeholder="e.g. Acme Corp" required>
+            {% if item.stock_form and item.stock_form.client_name.errors %}
+            {% for error in item.stock_form.client_name.errors %}
+            <div class="text-danger small mt-1">{{ error }}</div>
+            {% endfor %}
+            {% endif %}
+          </div>
+          <div class="mb-3">
+            {% if item.stock_form %}
+            <label class="form-label fw-semibold text-dark small" for="{{ item.stock_form.performed_by_name.id_for_label }}">{{ item.stock_form.performed_by_name.label }}</label>
+            {{ item.stock_form.performed_by_name }}
+            {% for error in item.stock_form.performed_by_name.errors %}
+            <div class="text-danger small mt-1">{{ error }}</div>
+            {% endfor %}
+            {% else %}
+            <label class="form-label fw-semibold text-dark small" for="performed_by_name{{ item.pk }}">Modified by</label>
+            <input class="form-control" type="text" name="performed_by_name" id="performed_by_name{{ item.pk }}" placeholder="Person name" required>
+            {% endif %}
+          </div>
+        </div>
+        <div class="modal-footer d-flex gap-2">
+          <button class="btn btn-primary flex-grow-1 d-inline-flex align-items-center justify-content-center gap-1"
+            type="submit" onclick="return setDirection({{ item.pk }}, 'in');">
+            <i data-lucide="arrow-down-right" style="width: 16px; height: 16px;"></i>
+            <span>+ Add Stock (In)</span>
+          </button>
+          <button class="btn btn-amber text-white flex-grow-1 d-inline-flex align-items-center justify-content-center gap-1"
+            type="submit" onclick="return setDirection({{ item.pk }}, 'out');">
+            <i data-lucide="arrow-up-right" style="width: 16px; height: 16px;"></i>
+            <span>- Remove Stock (Out)</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Delete Confirmation -->
+<div class="modal fade" id="deleteModal{{ item.pk }}" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-danger-light">
+        <div class="d-flex align-items-center gap-2 text-danger">
+          <i data-lucide="alert-circle" style="width: 20px; height: 20px;"></i>
+          <h2 class="modal-title h5 fw-bold mb-0 text-danger">Delete Product</h2>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form method="post" action="{% url 'delete_item' item.pk %}">
+        {% csrf_token %}
+        <div class="modal-body p-4">
+          <p class="mb-0 text-dark">Are you sure you want to delete <strong>{{ item.name }}</strong>?</p>
+          <p class="text-muted small mt-2 mb-0">This action will be permanently logged in the audit trail and cannot be undone.</p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-light border" data-bs-dismiss="modal" type="button">Cancel</button>
+          <button class="btn btn-danger d-inline-flex align-items-center gap-1" type="submit">
+            <i data-lucide="trash-2" style="width: 16px; height: 16px;"></i>
+            <span>Confirm Delete</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Render Lucide icons first so modals show with icons already in place.
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+
+    // Select All Checkboxes (Only select visible rows)
+    const selectAll = document.getElementById('select-all');
+    if (selectAll) {
+      selectAll.addEventListener('change', function () {
+        const rows = document.querySelectorAll('#inventory-table tbody tr.item-row');
+        rows.forEach((row) => {
+          if (row.style.display !== 'none') {
+            const checkbox = row.querySelector('input[name="item_ids"]');
+            if (checkbox) checkbox.checked = selectAll.checked;
+          }
+        });
+      });
+    }
+
+    // Sync select-all state with visible item checkboxes
+    function syncSelectAll() {
+      if (!selectAll) return;
+      const visibleRows = document.querySelectorAll('#inventory-table tbody tr.item-row');
+      let visibleCount = 0;
+      let checkedCount = 0;
+      visibleRows.forEach((row) => {
+        if (row.style.display !== 'none') {
+          visibleCount++;
+          const cb = row.querySelector('input[name="item_ids"]');
+          if (cb && cb.checked) checkedCount++;
+        }
+      });
+      selectAll.checked = (visibleCount > 0 && checkedCount === visibleCount);
+    }
+
+    // Listen to individual checkbox changes
+    document.querySelectorAll('input[name="item_ids"]').forEach((cb) => {
+      cb.addEventListener('change', syncSelectAll);
+    });
+
+    // Bulk Delete Form Validation
+    const bulkDeleteForm = document.getElementById('bulk-delete-form');
+    if (bulkDeleteForm) {
+      bulkDeleteForm.addEventListener('submit', function (e) {
+        const checkedBoxes = document.querySelectorAll('input[name="item_ids"]:checked');
+        if (checkedBoxes.length === 0) {
+          e.preventDefault();
+          alert('Please select at least one product to delete.');
+          return false;
+        }
+        if (!confirm('Are you sure you want to delete ' + checkedBoxes.length + ' selected product(s)?')) {
+          e.preventDefault();
+          return false;
+        }
+      });
+    }
+
+    // Table Realtime Filter
+    const searchInput = document.getElementById('inventory-search');
+    if (searchInput) {
+      searchInput.addEventListener('input', function () {
+        const term = this.value.toLowerCase().trim();
+        const rows = document.querySelectorAll('#inventory-table tbody tr.item-row');
+        rows.forEach(row => {
+          const text = row.textContent.toLowerCase();
+          row.style.display = text.includes(term) ? '' : 'none';
+        });
+        syncSelectAll();
+      });
+    }
+
+    // Auto-open modals if view requested it (safely).
+    function showModalById(id) {
+      if (!id) return;
+      const el = document.getElementById(id);
+      if (el && window.bootstrap && bootstrap.Modal) {
+        try {
+          bootstrap.Modal.getOrCreateInstance(el).show();
+        } catch (err) {
+          console.warn('Unable to show modal ' + id + ':', err);
+        }
+      }
+    }
+
+    {% if open_add_modal %}
+    showModalById('addItemModal');
+    {% endif %}
+    {% if open_edit_modal %}
+    showModalById('editModal{{ open_edit_modal }}');
+    {% endif %}
+    {% if open_stock_modal %}
+    showModalById('stockModal{{ open_stock_modal }}');
+    {% endif %}
+  });
+
+  // Sets the hidden direction field before submit. Returns true so submit proceeds.
+  function setDirection(itemId, direction) {
+    const dirInput = document.getElementById('direction' + itemId);
+    if (dirInput) {
+      dirInput.value = direction;
+    }
+    return true;
+  }
+</script>
+{% endblock %}

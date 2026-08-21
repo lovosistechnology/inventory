@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign In — Inventory Enterprise</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    :root {
+      /* Deep Plum / Violet Base */
+      --plum-950: #0d0618;
+      --plum-900: #150a28;
+      --plum-800: #1f1040;
+      --plum-700: #2e1a5c;
+      --plum-600: #3d2278;
+
+      /* Electric Teal / Cyan Primary */
+      --teal-500: #00c2a8;
+      --teal-400: #13d9be;
+      --teal-300: #5af0dc;
+      --teal-glow: rgba(0, 194, 168, 0.3);
+      --teal-light: rgba(0, 194, 168, 0.12);
+
+      /* Gold Secondary Accent */
+      --gold-500: #f0a500;
+      --gold-400: #fbbf24;
+      --gold-light: rgba(240, 165, 0, 0.15);
+      --gold-glow: rgba(240, 165, 0, 0.28);
+
+      /* Rose for alerts/danger */
+      --rose-500: #f43f5e;
+      --rose-light: rgba(244, 63, 94, 0.12);
+
+      /* Text & Neutral */
+      --text-primary: #f5f0ff;
+      --text-muted: #9d8fc4;
+      --border-subtle: rgba(255, 255, 255, 0.07);
+      --border-card: rgba(255, 255, 255, 0.05);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--plum-950);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Decorative BG elements */
+    .bg-orb-1 {
+      position: fixed;
+      top: -20%;
+      left: -10%;
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(circle, rgba(61, 34, 120, 0.6) 0%, transparent 65%);
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .bg-orb-2 {
+      position: fixed;
+      bottom: -25%;
+      right: -10%;
+      width: 750px;
+      height: 750px;
+      background: radial-gradient(circle, rgba(0, 194, 168, 0.12) 0%, transparent 65%);
+      filter: blur(100px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .bg-orb-3 {
+      position: fixed;
+      top: 40%;
+      right: 30%;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(240, 165, 0, 0.06) 0%, transparent 65%);
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .bg-dots {
+      position: fixed;
+      inset: 0;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+      background-size: 30px 30px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Main Wrapper */
+    .login-wrapper {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 1100px;
+      padding: 1.5rem;
+    }
+
+    /* Main Card */
+    .login-card {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: var(--plum-900);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow:
+        0 30px 60px rgba(0, 0, 0, 0.6),
+        0 0 0 1px rgba(255, 255, 255, 0.04),
+        inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    /* ====== LEFT: BRAND PANEL ====== */
+    .brand-panel {
+      background: linear-gradient(160deg, var(--plum-800) 0%, var(--plum-900) 60%, var(--plum-950) 100%);
+      border-right: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 3rem 2.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Decorative teal accent lines */
+    .brand-panel::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--teal-500), var(--gold-500), transparent);
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .logo-mark {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, var(--teal-500), var(--teal-400));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--plum-900);
+      box-shadow: 0 0 24px var(--teal-glow);
+      flex-shrink: 0;
+    }
+
+    .logo-text {
+      font-family: 'Sora', sans-serif;
+      font-weight: 800;
+      font-size: 1.25rem;
+      color: #ffffff;
+      letter-spacing: -0.03em;
+    }
+
+    .logo-tag {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--teal-400);
+      background: var(--teal-light);
+      border: 1px solid rgba(0, 194, 168, 0.25);
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+
+    .brand-headline {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.95rem;
+      font-weight: 800;
+      line-height: 1.22;
+      letter-spacing: -0.03em;
+      color: #ffffff;
+    }
+
+    .brand-headline .highlight {
+      color: var(--teal-400);
+    }
+
+    .brand-subtext {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      line-height: 1.65;
+    }
+
+    /* Feature Pills */
+    .feature-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+
+    .feature-pill {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 0.85rem 1rem;
+      transition: border-color 0.2s ease, background 0.2s ease;
+      cursor: default;
+    }
+
+    .feature-pill:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(0, 194, 168, 0.25);
+    }
+
+    .pill-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .pill-icon.teal {
+      background: var(--teal-light);
+      color: var(--teal-400);
+    }
+
+    .pill-icon.gold {
+      background: var(--gold-light);
+      color: var(--gold-400);
+    }
+
+    .pill-icon.violet {
+      background: rgba(167, 139, 250, 0.15);
+      color: #a78bfa;
+    }
+
+    .pill-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #e2d8f5;
+    }
+
+    .pill-sub {
+      font-size: 0.77rem;
+      color: var(--text-muted);
+      margin-top: 0.1rem;
+    }
+
+    /* Metric Row */
+    .metric-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    .metric-chip {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 0.65rem 0.5rem;
+      text-align: center;
+    }
+
+    .metric-chip .val {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--teal-400);
+      display: block;
+    }
+
+    .metric-chip .lbl {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      display: block;
+      margin-top: 0.15rem;
+    }
+
+    /* ====== RIGHT: FORM PANEL ====== */
+    .form-panel {
+      padding: 3rem 2.75rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background: var(--plum-900);
+      position: relative;
+    }
+
+    .form-panel::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold-500), transparent);
+    }
+
+    .form-top {
+      margin-bottom: 2rem;
+    }
+
+    .form-top h2 {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.025em;
+      margin-bottom: 0.35rem;
+    }
+
+    .form-top p {
+      font-size: 0.87rem;
+      color: var(--text-muted);
+    }
+
+    /* Input Fields */
+    .field-group {
+      margin-bottom: 1.1rem;
+    }
+
+    .field-label {
+      display: block;
+      font-size: 0.815rem;
+      font-weight: 600;
+      color: #c4b8e8;
+      margin-bottom: 0.4rem;
+    }
+
+    .field-wrap {
+      position: relative;
+    }
+
+    .field-icon {
+      position: absolute;
+      left: 0.9rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      pointer-events: none;
+      transition: color 0.2s ease;
+      z-index: 2;
+    }
+
+    .field-input {
+      width: 100%;
+      background: rgba(13, 6, 24, 0.8) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      border-radius: 10px !important;
+      color: #ffffff !important;
+      padding: 0.78rem 0.9rem 0.78rem 2.6rem !important;
+      font-size: 0.9rem;
+      font-family: 'Inter', sans-serif;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+    }
+
+    .field-input::placeholder {
+      color: rgba(157, 143, 196, 0.5);
+    }
+
+    .field-input:focus {
+      outline: none !important;
+      border-color: var(--teal-500) !important;
+      box-shadow: 0 0 0 3px var(--teal-light) !important;
+    }
+
+    .field-wrap:focus-within .field-icon {
+      color: var(--teal-400);
+    }
+
+    .toggle-btn {
+      position: absolute;
+      right: 0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 0.2rem;
+      transition: color 0.2s ease;
+      z-index: 3;
+    }
+
+    .toggle-btn:hover {
+      color: var(--teal-400);
+    }
+
+    .field-error {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      color: #fc8181;
+      font-size: 0.78rem;
+      margin-top: 0.3rem;
+    }
+
+    /* Alert Banner */
+    .alert-box {
+      background: var(--rose-light);
+      border: 1px solid rgba(244, 63, 94, 0.25);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      font-size: 0.84rem;
+      color: #fda4af;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 1.2rem;
+    }
+
+    /* Options Row */
+    .options-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+
+    .remember-check {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+    }
+
+    .remember-check input[type="checkbox"] {
+      width: 15px;
+      height: 15px;
+      accent-color: var(--teal-500);
+      cursor: pointer;
+    }
+
+    .remember-check label {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .sso-tag {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      opacity: 0.7;
+    }
+
+    /* Submit Button — Gold CTA */
+    .btn-signin {
+      width: 100%;
+      background: linear-gradient(135deg, var(--gold-500) 0%, #e09000 100%);
+      border: none;
+      border-radius: 10px;
+      padding: 0.9rem 1.25rem;
+      font-weight: 700;
+      font-size: 0.95rem;
+      font-family: 'Sora', sans-serif;
+      color: var(--plum-900);
+      letter-spacing: -0.01em;
+      box-shadow: 0 4px 20px var(--gold-glow);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      cursor: pointer;
+    }
+
+    .btn-signin:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px var(--gold-glow);
+    }
+
+    .btn-signin:active {
+      transform: translateY(0px);
+    }
+
+    /* Divider */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin: 1.25rem 0;
+    }
+
+    .divider hr {
+      flex-grow: 1;
+      border: none;
+      border-top: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+    .divider span {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* Teal SSO Alternative Button */
+    .btn-sso {
+      width: 100%;
+      background: transparent;
+      border: 1px solid rgba(0, 194, 168, 0.3);
+      border-radius: 10px;
+      padding: 0.75rem 1.25rem;
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: var(--teal-400);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      transition: background 0.2s ease, border-color 0.2s ease;
+    }
+
+    .btn-sso:hover {
+      background: var(--teal-light);
+      border-color: var(--teal-500);
+    }
+
+    /* Mobile brand logo */
+    .mobile-brand {
+      display: none;
+    }
+
+    /* Footer note */
+    .form-footnote {
+      text-align: center;
+      margin-top: 1.75rem;
+      font-size: 0.75rem;
+      color: rgba(157, 143, 196, 0.5);
+    }
+
+    @media (max-width: 991.98px) {
+      .login-card {
+        grid-template-columns: 1fr;
+      }
+
+      .brand-panel {
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        padding: 2rem 1.75rem;
+      }
+
+      .form-panel {
+        padding: 2rem 1.75rem;
+      }
+
+      .brand-headline {
+        font-size: 1.6rem;
+      }
+
+      .mobile-brand {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg-orb-1"></div>
+  <div class="bg-orb-2"></div>
+  <div class="bg-orb-3"></div>
+  <div class="bg-dots"></div>
+
+  <div class="login-wrapper">
+    <div class="login-card">
+
+      <!-- LEFT: Brand Panel -->
+      <div class="brand-panel d-none d-lg-flex flex-column gap-4">
+        <!-- Brand Logo -->
+        <div class="brand-logo">
+          <div class="logo-mark">
+            <i data-lucide="boxes" style="width: 22px; height: 22px;"></i>
+          </div>
+          <span class="logo-text">Inventory</span>
+          <span class="logo-tag">Enterprise</span>
+        </div>
+
+        <!-- Headline -->
+        <div>
+          <h1 class="brand-headline">
+            Intelligent Stock<br>
+            <span class="highlight">Control Platform</span>
+          </h1>
+          <p class="brand-subtext mt-2">
+            Manage warehouse movements, audit trails, and category valuations in one unified enterprise-grade workspace.
+          </p>
+        </div>
+
+        <!-- Feature Pills -->
+        <div class="feature-list">
+          <div class="feature-pill">
+            <div class="pill-icon teal">
+              <i data-lucide="trending-up" style="width: 17px; height: 17px;"></i>
+            </div>
+            <div>
+              <div class="pill-label">Real-Time Stock Telemetry</div>
+              <div class="pill-sub">Live inflow/outflow stream with client assignments</div>
+            </div>
+          </div>
+          <div class="feature-pill">
+            <div class="pill-icon gold">
+              <i data-lucide="shield-check" style="width: 17px; height: 17px;"></i>
+            </div>
+            <div>
+              <div class="pill-label">Immutable Audit Trail</div>
+              <div class="pill-sub">Every action captured with user, timestamp & delta</div>
+            </div>
+          </div>
+          <div class="feature-pill">
+            <div class="pill-icon violet">
+              <i data-lucide="layers" style="width: 17px; height: 17px;"></i>
+            </div>
+            <div>
+              <div class="pill-label">Category Financial Valuation</div>
+              <div class="pill-sub">Per-category stock value and product distribution</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Sign In Form -->
+      <div class="form-panel">
+        <!-- Mobile-only brand -->
+        <div class="mobile-brand">
+          <div class="logo-mark">
+            <i data-lucide="boxes" style="width: 20px; height: 20px;"></i>
+          </div>
+          <span class="logo-text">Inventory</span>
+        </div>
+
+        <div class="form-top">
+          <h2>Welcome back</h2>
+          <p>Sign in to your enterprise inventory workspace</p>
+        </div>
+
+        <!-- Non-field Form Errors -->
+        {% if form.non_field_errors %}
+        <div class="alert-box">
+          <i data-lucide="alert-triangle" style="width: 17px; height: 17px; flex-shrink: 0;"></i>
+          <div>
+            {% for error in form.non_field_errors %}
+            <div>{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <form method="POST" action="{% url 'login' %}" novalidate id="loginForm">
+          {% csrf_token %}
+
+          <!-- Username -->
+          <div class="field-group">
+            <label for="id_username" class="field-label">Username</label>
+            <div class="field-wrap">
+              <i data-lucide="user" class="field-icon" style="width: 16px; height: 16px;"></i>
+              <input type="text" name="username" id="id_username"
+                class="form-control field-input {% if form.username.errors %}is-invalid{% endif %}"
+                placeholder="Enter your username"
+                value="{{ form.username.value|default:'' }}" required autofocus>
+            </div>
+            {% if form.username.errors %}
+            <div class="field-error">
+              <i data-lucide="info" style="width: 13px; height: 13px;"></i>
+              <span>{{ form.username.errors.0 }}</span>
+            </div>
+            {% endif %}
+          </div>
+
+          <!-- Password -->
+          <div class="field-group">
+            <label for="id_password" class="field-label">Password</label>
+            <div class="field-wrap">
+              <i data-lucide="lock" class="field-icon" style="width: 16px; height: 16px;"></i>
+              <input type="password" name="password" id="id_password"
+                class="form-control field-input {% if form.password.errors %}is-invalid{% endif %}"
+                placeholder="Enter your password" required>
+              <button type="button" class="toggle-btn" id="togglePasswordBtn" title="Toggle visibility">
+                <i data-lucide="eye" id="togglePasswordIcon" style="width: 16px; height: 16px;"></i>
+              </button>
+            </div>
+            {% if form.password.errors %}
+            <div class="field-error">
+              <i data-lucide="info" style="width: 13px; height: 13px;"></i>
+              <span>{{ form.password.errors.0 }}</span>
+            </div>
+            {% endif %}
+          </div>
+
+          <!-- Options Row -->
+          <div class="options-row">
+            <div class="remember-check">
+              <input type="checkbox" id="rememberMe">
+              <label for="rememberMe">Keep me signed in</label>
+            </div>
+            <span class="sso-tag">SSO Available</span>
+          </div>
+
+          <!-- Primary CTA — Gold -->
+          <button type="submit" class="btn-signin" id="submitBtn">
+            <span>Access Dashboard</span>
+            <i data-lucide="arrow-right" style="width: 17px; height: 17px;"></i>
+          </button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    lucide.createIcons();
+
+    // Password toggle
+    const passwordInput = document.getElementById('id_password');
+    const toggleBtn = document.getElementById('togglePasswordBtn');
+    const toggleIcon = document.getElementById('togglePasswordIcon');
+
+    if (toggleBtn && passwordInput) {
+      toggleBtn.addEventListener('click', () => {
+        const isPass = passwordInput.type === 'password';
+        passwordInput.type = isPass ? 'text' : 'password';
+        toggleIcon.setAttribute('data-lucide', isPass ? 'eye-off' : 'eye');
+        lucide.createIcons();
+      });
+    }
+
+    // Submit loading state
+    const loginForm = document.getElementById('loginForm');
+    const submitBtn = document.getElementById('submitBtn');
+    if (loginForm && submitBtn) {
+      loginForm.addEventListener('submit', () => {
+        if (loginForm.checkValidity()) {
+          submitBtn.innerHTML = `
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            <span>Authenticating...</span>
+          `;
+          submitBtn.style.opacity = '0.8';
+          submitBtn.style.pointerEvents = 'none';
+        }
+      });
+    }
+  </script>
+</body>
+
+</html>

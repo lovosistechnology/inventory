@@ -1,0 +1,24 @@
+# Python
+.idea
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual Environment
+.venv/
+venv/
+
+# Django Static Files
+/staticfiles/
+/media/
+
+# VSCode & IDE Files
+.vscode/
+.idea/
+
+# Vercel Build Cache
+.vercel/
+
+# Railway
+.railway/
